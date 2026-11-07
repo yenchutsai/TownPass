@@ -1,3 +1,5 @@
+> **素材來源**：「看得懂」服務入口圖示 `assets/png/icon_easy_read.png` 改作自 [Icon Reading Wikipedia in the classroom 59.png](https://commons.wikimedia.org/wiki/File:Icon_Reading_Wikipedia_in_the_classroom_59.png)，作者 Wikimedia Foundation, Education team，以 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) 授權。**有改動**：去除白色背景、改為台北通圖示配色、移除星形裝飾、補成正方形並縮小為 144×144。詳見 [`assets/ATTRIBUTION.md`](assets/ATTRIBUTION.md)。
+
 # What is Town Pass?
 
 Town Pass is an open-source project developed by the Taipei City Government. With the growth of smart cities, the demand for digitalization in city management and citizen services continues to rise. As we enter a new digital era, our goal is to involve citizens in the process, combining third-party expertise and innovation to make digital life in Taipei more convenient.

@@ -187,7 +187,7 @@ extension MyServiceIdExt on MyServiceItemId {
       MyServiceItemId.easyRead => MyServiceItem(
           title: '看得懂',
           description: '把看不懂的市政資訊變好懂',
-          icon: Assets.svg.iconEasyRead24.svg(),
+          icon: Assets.png.iconEasyRead.image(),
           category: MyServiceCategory.cityService,
           destinationUrl: 'https://www.gov.taipei/',
         ),
