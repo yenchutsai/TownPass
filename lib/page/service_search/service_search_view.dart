@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:town_pass/gen/assets.gen.dart';
 import 'package:town_pass/page/city_service/model/my_service_model.dart';
+import 'package:town_pass/page/service_search/semantic_search.dart';
 import 'package:town_pass/page/service_search/service_search_engine.dart';
 import 'package:town_pass/page/service_search/service_search_index.dart';
 import 'package:town_pass/util/tp_app_bar.dart';
@@ -11,23 +12,43 @@ import 'package:town_pass/util/tp_text.dart';
 
 /// 服務搜尋頁：輸入中文、英文、印尼文、越南文、泰文或菲律賓文，
 /// 用自己的說法（例如「我收到罰單」「musholla」）找到台北通裡的服務。
+///
+/// 混合搜尋：先列關鍵字模糊搜尋的結果（準確、舊手機也能用），
+/// 啟用 AI 語意搜尋後，下方再列「可能相關」（依意思推薦，例如「雇主打我」）。
 class ServiceSearchController extends GetxController {
   final TextEditingController textController = TextEditingController();
   final RxString query = ''.obs;
   final RxList<SearchResult> results = <SearchResult>[].obs;
+  final RxList<SearchResult> aiResults = <SearchResult>[].obs;
   final RxBool ready = false.obs;
   ServiceSearchEngine? _engine;
+  List<SearchEntry> _entries = const [];
+  int _searchId = 0;
+
+  SemanticSearch get semantic => Get.isRegistered<SemanticSearch>()
+      ? Get.find<SemanticSearch>()
+      : Get.put<SemanticSearch>(SemanticSearch(), permanent: true);
 
   @override
   void onInit() {
     super.onInit();
     loadSearchEntries().then((List<SearchEntry> entries) {
+      _entries = entries;
       _engine = ServiceSearchEngine(entries);
       ready.value = true;
       _run(query.value);
+      semantic.resumeIfEnabled(entries);
     });
     debounce<String>(query, _run, time: const Duration(milliseconds: 150));
+    ever<SemanticState>(semantic.state, (SemanticState s) {
+      if (s == SemanticState.ready) {
+        _run(query.value);
+      }
+    });
   }
+
+  /// 使用者按下「啟用」：下載（約 165 MB，只需一次）並載入語意搜尋模型。
+  Future<void> enableAi() => semantic.enable(_entries);
 
   void setQuery(String value) {
     textController.value = TextEditingValue(
@@ -37,8 +58,20 @@ class ServiceSearchController extends GetxController {
     query.value = value;
   }
 
-  void _run(String value) {
-    results.value = _engine?.search(value) ?? const [];
+  Future<void> _run(String value) async {
+    final int id = ++_searchId;
+    final List<SearchResult> keyword = _engine?.search(value) ?? const [];
+    results.value = keyword;
+    if (value.trim().isEmpty) {
+      aiResults.clear();
+      return;
+    }
+    final List<SearchResult> ai = await semantic.search(value, limit: 3 + keyword.length);
+    if (id != _searchId) {
+      return; // 使用者已經改了輸入，丟掉舊結果。
+    }
+    final Set<String> shown = {for (final SearchResult r in keyword.take(5)) r.entry.id};
+    aiResults.value = ai.where((SearchResult r) => !shown.contains(r.entry.id)).take(3).toList();
   }
 
   @override
@@ -76,7 +109,13 @@ class ServiceSearchView extends StatelessWidget {
             child: TextField(
               controller: c.textController,
               autofocus: true,
-              onChanged: (String v) => c.query.value = v,
+              onChanged: (String v) {
+                // 注音、倉頡等輸入法還在選字時（例如「ㄎㄢˇㄕㄨˋ」），先不要搜尋，等選好字再搜。
+                if (c.textController.value.composing.isValid && !c.textController.value.composing.isCollapsed) {
+                  return;
+                }
+                c.query.value = v;
+              },
               textInputAction: TextInputAction.search,
               style: TPTextStyles.h3Regular.copyWith(color: TPColors.grayscale900),
               decoration: InputDecoration(
@@ -95,10 +134,7 @@ class ServiceSearchView extends StatelessWidget {
                 filled: true,
                 fillColor: TPColors.grayscale50,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
               ),
             ),
           ),
@@ -108,16 +144,25 @@ class ServiceSearchView extends StatelessWidget {
                 return const Center(child: CircularProgressIndicator());
               }
               if (c.query.value.trim().isEmpty) {
-                return _Examples(onTap: c.setQuery);
+                return ListView(
+                  children: [
+                    _Examples(onTap: c.setQuery),
+                    _AiCard(controller: c, compact: false),
+                  ],
+                );
               }
-              if (c.results.isEmpty) {
-                return const _NoResult();
-              }
-              return ListView.separated(
+              final SemanticState ai = c.semantic.state.value;
+              return ListView(
                 padding: const EdgeInsets.symmetric(vertical: 8),
-                itemCount: c.results.length,
-                separatorBuilder: (_, _) => const Divider(height: 1, indent: 72, color: TPColors.grayscale100),
-                itemBuilder: (_, int i) => _ResultTile(result: c.results[i]),
+                children: [
+                  if (c.results.isEmpty && (ai != SemanticState.ready || c.aiResults.isEmpty)) const _NoResult(),
+                  for (final SearchResult r in c.results) _ResultTile(result: r),
+                  if (ai == SemanticState.ready && c.aiResults.isNotEmpty) ...[
+                    const _SectionHeader(title: '可能相關', subtitle: '由手機上的 AI 依意思推薦（EmbeddingGemma 2），僅供參考'),
+                    for (final SearchResult r in c.aiResults) _ResultTile(result: r),
+                  ],
+                  if (ai != SemanticState.ready) _AiCard(controller: c, compact: true),
+                ],
               );
             }),
           ),
@@ -134,32 +179,35 @@ class _Examples extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
+    return Padding(
       padding: const EdgeInsets.all(16),
-      children: [
-        const TPText('試試看這樣搜尋', style: TPTextStyles.h3SemiBold, color: TPColors.grayscale900),
-        const SizedBox(height: 4),
-        const TPText(
-          '用平常說話的方式，或用中文、English、Bahasa Indonesia、Tiếng Việt、ภาษาไทย、Tagalog 都可以。',
-          style: TPTextStyles.bodyRegular,
-          color: TPColors.grayscale600,
-        ),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final String example in ServiceSearchView._examples)
-              ActionChip(
-                label: TPText(example, style: TPTextStyles.bodyRegular, color: TPColors.primary700),
-                backgroundColor: TPColors.primary50,
-                side: const BorderSide(color: TPColors.primary200),
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-                onPressed: () => onTap(example),
-              ),
-          ],
-        ),
-      ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const TPText('試試看這樣搜尋', style: TPTextStyles.h3SemiBold, color: TPColors.grayscale900),
+          const SizedBox(height: 4),
+          const TPText(
+            '用平常說話的方式，或用中文、English、Bahasa Indonesia、Tiếng Việt、ภาษาไทย、Tagalog 都可以。',
+            style: TPTextStyles.bodyRegular,
+            color: TPColors.grayscale600,
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final String example in ServiceSearchView._examples)
+                ActionChip(
+                  label: TPText(example, style: TPTextStyles.bodyRegular, color: TPColors.primary700),
+                  backgroundColor: TPColors.primary50,
+                  side: const BorderSide(color: TPColors.primary200),
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                  onPressed: () => onTap(example),
+                ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -214,7 +262,8 @@ class _ResultTile extends StatelessWidget {
     final String url = _url;
     final bool available = url.isNotEmpty;
     final SearchEntry entry = result.entry;
-    final bool showMatched = result.matched != entry.title && result.matched != entry.description;
+    final bool showMatched =
+        result.matched.isNotEmpty && result.matched != entry.title && result.matched != entry.description;
 
     return Semantics(
       button: available,
@@ -223,8 +272,7 @@ class _ResultTile extends StatelessWidget {
       child: InkWell(
         onTap: available
             ? () => TPRoute.openUri(uri: url, forceTitle: item?.forceWebViewTitle)
-            : () => Get.snackbar('尚未開放', '「${entry.title}」目前還沒有線上服務，請撥打 1999 詢問。',
-                snackPosition: SnackPosition.BOTTOM),
+            : () => Get.snackbar('尚未開放', '「${entry.title}」目前還沒有線上服務，請撥打 1999 詢問。', snackPosition: SnackPosition.BOTTOM),
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: 64),
           child: Padding(
@@ -234,11 +282,7 @@ class _ResultTile extends StatelessWidget {
                 CircleAvatar(
                   radius: 20,
                   backgroundColor: TPColors.primary50,
-                  child: SizedBox(
-                    width: 28,
-                    height: 28,
-                    child: item?.icon ?? Assets.svg.iconTalk.svg(),
-                  ),
+                  child: SizedBox(width: 28, height: 28, child: item?.icon ?? Assets.svg.iconTalk.svg()),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -259,11 +303,7 @@ class _ResultTile extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       if (showMatched)
-                        TPText(
-                          '符合：${result.matched}',
-                          style: TPTextStyles.caption,
-                          color: TPColors.primary700,
-                        ),
+                        TPText('符合：${result.matched}', style: TPTextStyles.caption, color: TPColors.primary700),
                       if (!available)
                         const TPText('尚未開放線上服務', style: TPTextStyles.caption, color: TPColors.grayscale500),
                     ],
@@ -276,5 +316,106 @@ class _ResultTile extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.title, required this.subtitle});
+
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: TPColors.grayscale50,
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      margin: const EdgeInsets.only(top: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TPText(title, style: TPTextStyles.h3SemiBold, color: TPColors.grayscale900),
+          TPText(subtitle, style: TPTextStyles.caption, color: TPColors.grayscale600),
+        ],
+      ),
+    );
+  }
+}
+
+/// 啟用 AI 語意搜尋的卡片：說明用途、下載大小，下載時顯示進度。
+class _AiCard extends StatelessWidget {
+  const _AiCard({required this.controller, required this.compact});
+
+  final ServiceSearchController controller;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final SemanticSearch semantic = controller.semantic;
+    return Obx(() {
+      final SemanticState state = semantic.state.value;
+      if (state == SemanticState.ready) {
+        return compact
+            ? const SizedBox.shrink()
+            : const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: TPText(
+                  '已啟用 AI 語意搜尋：可以直接描述您遇到的狀況，例如「雇主打我」「đau bụng」。',
+                  style: TPTextStyles.caption,
+                  color: TPColors.primary700,
+                ),
+              );
+      }
+      final int? progress = semantic.downloadProgress.value;
+      return Container(
+        margin: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(color: TPColors.primary50, borderRadius: BorderRadius.circular(12)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TPText(compact ? '找不到想要的服務？' : 'AI 語意搜尋', style: TPTextStyles.h3SemiBold, color: TPColors.grayscale900),
+            const SizedBox(height: 4),
+            const TPText(
+              '啟用後可以直接描述您遇到的狀況，例如「雇主打我」「đau bụng」。'
+              'AI 在您的手機上運作，輸入的內容不會傳出去。第一次需下載約 165 MB，之後不用網路也能用。',
+              style: TPTextStyles.bodyRegular,
+              color: TPColors.grayscale700,
+            ),
+            const SizedBox(height: 12),
+            if (state == SemanticState.loading)
+              Row(
+                children: [
+                  const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                  const SizedBox(width: 12),
+                  TPText(
+                    progress != null && progress < 100 ? '下載中 $progress%' : '準備中…',
+                    style: TPTextStyles.bodyRegular,
+                    color: TPColors.grayscale700,
+                  ),
+                ],
+              )
+            else
+              SizedBox(
+                height: 48,
+                child: FilledButton(
+                  style: FilledButton.styleFrom(backgroundColor: TPColors.primary500),
+                  onPressed: controller.enableAi,
+                  child: TPText(
+                    state == SemanticState.failed ? '重新嘗試' : '啟用 AI 語意搜尋',
+                    style: TPTextStyles.h3SemiBold,
+                    color: TPColors.white,
+                  ),
+                ),
+              ),
+            if (state == SemanticState.failed)
+              const Padding(
+                padding: EdgeInsets.only(top: 8),
+                child: TPText('目前無法啟用，請確認網路後再試。仍可使用一般搜尋。', style: TPTextStyles.caption, color: TPColors.grayscale600),
+              ),
+          ],
+        ),
+      );
+    });
   }
 }
