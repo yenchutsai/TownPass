@@ -31,6 +31,10 @@ class CityServiceView extends StatelessWidget {
         physics: const BouncingScrollPhysics(),
         children: [
           Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            child: _searchBar(),
+          ),
+          Padding(
             padding: const EdgeInsets.all(16),
             child: _myServiceTitle(),
           ),
@@ -43,6 +47,42 @@ class CityServiceView extends StatelessWidget {
           const TrendingServiceWidget(),
           const SizedBox(height: 20),
         ],
+      ),
+    );
+  }
+
+  /// 搜尋入口：點了以後進入搜尋頁。
+  Widget _searchBar() {
+    return Semantics(
+      button: true,
+      label: '搜尋服務，可以用您的語言輸入',
+      excludeSemantics: true,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => Get.toNamed(TPRoute.serviceSearch),
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 48),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          decoration: BoxDecoration(
+            color: TPColors.grayscale50,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Row(
+            children: [
+              Icon(Icons.search, color: TPColors.grayscale500),
+              SizedBox(width: 8),
+              Expanded(
+                child: TPText(
+                  '您想辦什麼事？ Search / Cari / Tìm / ค้นหา',
+                  style: TPTextStyles.bodyRegular,
+                  color: TPColors.grayscale500,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

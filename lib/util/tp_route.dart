@@ -11,6 +11,7 @@ import 'package:town_pass/page/basic_info_edit/basic_info_edit_view.dart';
 import 'package:town_pass/page/basic_info_edit/basic_info_edit_view_controller.dart';
 import 'package:town_pass/page/city_service/widget/pinned_service_widget_controller.dart';
 import 'package:town_pass/page/city_service_edit/city_service_edit_view.dart';
+import 'package:town_pass/page/service_search/service_search_view.dart';
 import 'package:town_pass/page/city_service_edit/city_service_edit_view_controller.dart';
 import 'package:town_pass/page/feedback/feedback_view.dart';
 import 'package:town_pass/page/feedback/feedback_view_controller.dart';
@@ -54,6 +55,7 @@ abstract class TPRoute {
   static const String qrCodeScan = '/qr_code_scan';
   static const String service = '/service';
   static const String serviceEdit = '/service_edit';
+  static const String serviceSearch = '/service_search';
   static const String setting = '/setting';
   static const String settingStartPage = '/setting_start_page';
   static const String subscription = '/subscription';
@@ -146,6 +148,13 @@ abstract class TPRoute {
       page: () => const CityServiceEditView(),
       binding: BindingsBuilder(() {
         Get.put<CityServiceEditViewController>(CityServiceEditViewController());
+      }),
+    ),
+    GetPage(
+      name: serviceSearch,
+      page: () => const ServiceSearchView(),
+      binding: BindingsBuilder(() {
+        Get.put<ServiceSearchController>(ServiceSearchController());
       }),
     ),
     GetPage(

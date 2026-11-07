@@ -1,0 +1,1129 @@
+{
+  "version": 1,
+  "about": "台北通服務模糊搜尋的索引。appServices 補充 App 內建服務的同義詞；microservice 列出移工微服務（TownPass-Services）的頁面。中文以外的關鍵字為初稿，請由熟悉該語言的隊友或母語人士確認。",
+  "appServices": {
+    "dedicatedLine": {
+      "zh": [
+        "1999",
+        "市民熱線",
+        "打電話給市政府",
+        "陳情電話",
+        "客服"
+      ],
+      "en": [
+        "hotline",
+        "city hotline",
+        "call city hall"
+      ],
+      "id": [
+        "telepon",
+        "hotline"
+      ],
+      "vi": [
+        "đường dây nóng",
+        "gọi điện"
+      ],
+      "th": [
+        "สายด่วน",
+        "โทร"
+      ],
+      "tl": [
+        "tawag",
+        "hotline"
+      ]
+    },
+    "districtOffice": {
+      "zh": [
+        "申辦",
+        "申請",
+        "線上申請",
+        "補助",
+        "申訴",
+        "罰單",
+        "紅單",
+        "被開單",
+        "退費",
+        "區公所"
+      ],
+      "en": [
+        "apply",
+        "application",
+        "subsidy",
+        "appeal",
+        "ticket",
+        "fine",
+        "refund"
+      ],
+      "id": [
+        "pengajuan",
+        "subsidi",
+        "tilang",
+        "denda"
+      ],
+      "vi": [
+        "đăng ký",
+        "trợ cấp",
+        "phạt",
+        "vé phạt"
+      ],
+      "th": [
+        "ยื่นคำขอ",
+        "เงินอุดหนุน",
+        "ใบสั่ง",
+        "ค่าปรับ"
+      ],
+      "tl": [
+        "aplikasyon",
+        "multa",
+        "tiket"
+      ]
+    },
+    "reportIssue": {
+      "zh": [
+        "陳情",
+        "反映",
+        "檢舉",
+        "投訴",
+        "抱怨",
+        "噪音",
+        "垃圾",
+        "違建",
+        "路燈不亮"
+      ],
+      "en": [
+        "complaint",
+        "report a problem",
+        "noise",
+        "garbage"
+      ],
+      "id": [
+        "pengaduan",
+        "lapor",
+        "keluhan",
+        "berisik",
+        "sampah"
+      ],
+      "vi": [
+        "khiếu nại",
+        "phản ánh",
+        "tiếng ồn",
+        "rác"
+      ],
+      "th": [
+        "ร้องเรียน",
+        "แจ้งปัญหา",
+        "เสียงดัง",
+        "ขยะ"
+      ],
+      "tl": [
+        "reklamo",
+        "ingay",
+        "basura"
+      ]
+    },
+    "reservation": {
+      "zh": [
+        "叫號",
+        "排隊",
+        "號碼牌",
+        "預約",
+        "等多久",
+        "戶政事務所",
+        "地政事務所",
+        "稅捐處",
+        "就業服務站"
+      ],
+      "en": [
+        "queue",
+        "number ticket",
+        "appointment",
+        "waiting time"
+      ],
+      "id": [
+        "antrian",
+        "nomor antrian",
+        "janji temu"
+      ],
+      "vi": [
+        "xếp hàng",
+        "số thứ tự",
+        "đặt lịch hẹn"
+      ],
+      "th": [
+        "คิว",
+        "บัตรคิว",
+        "นัดหมาย"
+      ],
+      "tl": [
+        "pila",
+        "numero",
+        "appointment"
+      ]
+    },
+    "iVoting": {
+      "zh": [
+        "投票",
+        "民意"
+      ],
+      "en": [
+        "vote",
+        "voting"
+      ],
+      "id": [
+        "pemungutan suara"
+      ],
+      "vi": [
+        "bỏ phiếu"
+      ],
+      "th": [
+        "ลงคะแนน"
+      ],
+      "tl": [
+        "botohan"
+      ]
+    },
+    "dashboard": {
+      "zh": [
+        "數據",
+        "統計",
+        "儀表板"
+      ],
+      "en": [
+        "data",
+        "statistics",
+        "dashboard"
+      ],
+      "id": [
+        "data",
+        "statistik"
+      ],
+      "vi": [
+        "dữ liệu",
+        "thống kê"
+      ],
+      "th": [
+        "ข้อมูล",
+        "สถิติ"
+      ],
+      "tl": [
+        "datos"
+      ]
+    },
+    "survey": {
+      "zh": [
+        "問卷",
+        "意見",
+        "滿意度"
+      ],
+      "en": [
+        "survey",
+        "feedback"
+      ],
+      "id": [
+        "survei"
+      ],
+      "vi": [
+        "khảo sát"
+      ],
+      "th": [
+        "แบบสอบถาม"
+      ],
+      "tl": [
+        "survey"
+      ]
+    },
+    "police": {
+      "zh": [
+        "報警",
+        "報案",
+        "警察",
+        "被偷",
+        "失竊",
+        "遺失",
+        "東西掉了",
+        "被打",
+        "詐騙"
+      ],
+      "en": [
+        "police",
+        "report a crime",
+        "stolen",
+        "lost",
+        "scam"
+      ],
+      "id": [
+        "polisi",
+        "lapor polisi",
+        "kecurian",
+        "hilang",
+        "penipuan"
+      ],
+      "vi": [
+        "cảnh sát",
+        "báo công an",
+        "bị trộm",
+        "mất đồ",
+        "lừa đảo"
+      ],
+      "th": [
+        "ตำรวจ",
+        "แจ้งความ",
+        "ของหาย",
+        "ถูกขโมย",
+        "โกง"
+      ],
+      "tl": [
+        "pulis",
+        "nanakaw",
+        "nawala",
+        "scam"
+      ]
+    },
+    "neighborhood": {
+      "zh": [
+        "里長",
+        "里辦公處",
+        "鄰里"
+      ],
+      "en": [
+        "village chief",
+        "neighborhood office"
+      ],
+      "id": [
+        "kepala desa",
+        "lingkungan"
+      ],
+      "vi": [
+        "trưởng khu phố",
+        "tổ dân phố"
+      ],
+      "th": [
+        "ผู้ใหญ่บ้าน",
+        "ชุมชน"
+      ],
+      "tl": [
+        "barangay",
+        "kapitan"
+      ]
+    },
+    "disasterReport": {
+      "zh": [
+        "災情",
+        "颱風",
+        "地震",
+        "淹水",
+        "積水",
+        "樹倒了",
+        "路樹",
+        "電線掉下來",
+        "停電",
+        "火災",
+        "土石流"
+      ],
+      "en": [
+        "disaster",
+        "typhoon",
+        "earthquake",
+        "flood",
+        "fallen tree",
+        "power outage",
+        "fire"
+      ],
+      "id": [
+        "bencana",
+        "topan",
+        "gempa",
+        "banjir",
+        "pohon tumbang",
+        "mati listrik",
+        "kebakaran"
+      ],
+      "vi": [
+        "thiên tai",
+        "bão",
+        "động đất",
+        "ngập lụt",
+        "cây đổ",
+        "mất điện",
+        "cháy"
+      ],
+      "th": [
+        "ภัยพิบัติ",
+        "พายุไต้ฝุ่น",
+        "แผ่นดินไหว",
+        "น้ำท่วม",
+        "ต้นไม้ล้ม",
+        "ไฟดับ",
+        "ไฟไหม้"
+      ],
+      "tl": [
+        "sakuna",
+        "bagyo",
+        "lindol",
+        "baha",
+        "brownout",
+        "sunog"
+      ]
+    },
+    "vaccineAppointment": {
+      "zh": [
+        "打疫苗",
+        "疫苗",
+        "流感",
+        "新冠"
+      ],
+      "en": [
+        "vaccine",
+        "vaccination",
+        "flu shot",
+        "covid"
+      ],
+      "id": [
+        "vaksin",
+        "vaksinasi"
+      ],
+      "vi": [
+        "tiêm vắc xin",
+        "vắc xin"
+      ],
+      "th": [
+        "วัคซีน",
+        "ฉีดวัคซีน"
+      ],
+      "tl": [
+        "bakuna"
+      ]
+    },
+    "medicalAppointment": {
+      "zh": [
+        "看病",
+        "掛號",
+        "看醫生",
+        "醫院",
+        "生病",
+        "不舒服"
+      ],
+      "en": [
+        "doctor",
+        "hospital",
+        "clinic",
+        "sick",
+        "medical appointment"
+      ],
+      "id": [
+        "dokter",
+        "rumah sakit",
+        "sakit",
+        "berobat"
+      ],
+      "vi": [
+        "khám bệnh",
+        "bệnh viện",
+        "bác sĩ",
+        "bị ốm"
+      ],
+      "th": [
+        "หาหมอ",
+        "โรงพยาบาล",
+        "ป่วย"
+      ],
+      "tl": [
+        "doktor",
+        "ospital",
+        "may sakit"
+      ]
+    },
+    "cityRadio": {
+      "zh": [
+        "廣播",
+        "電台",
+        "收音機"
+      ],
+      "en": [
+        "radio"
+      ],
+      "id": [
+        "radio"
+      ],
+      "vi": [
+        "đài phát thanh"
+      ],
+      "th": [
+        "วิทยุ"
+      ],
+      "tl": [
+        "radyo"
+      ]
+    },
+    "familyCenter": {
+      "zh": [
+        "親子",
+        "小孩",
+        "育兒",
+        "遊戲室"
+      ],
+      "en": [
+        "kids",
+        "children",
+        "parenting"
+      ],
+      "id": [
+        "anak",
+        "anak-anak"
+      ],
+      "vi": [
+        "trẻ em",
+        "con cái"
+      ],
+      "th": [
+        "เด็ก",
+        "ครอบครัว"
+      ],
+      "tl": [
+        "bata",
+        "anak"
+      ]
+    },
+    "greenMap": {
+      "zh": [
+        "公園",
+        "綠地",
+        "散步"
+      ],
+      "en": [
+        "park",
+        "green space"
+      ],
+      "id": [
+        "taman"
+      ],
+      "vi": [
+        "công viên"
+      ],
+      "th": [
+        "สวนสาธารณะ"
+      ],
+      "tl": [
+        "parke"
+      ]
+    },
+    "petFriendlyMap": {
+      "zh": [
+        "寵物",
+        "狗",
+        "貓",
+        "遛狗"
+      ],
+      "en": [
+        "pet",
+        "dog",
+        "cat"
+      ],
+      "id": [
+        "hewan peliharaan",
+        "anjing",
+        "kucing"
+      ],
+      "vi": [
+        "thú cưng",
+        "chó",
+        "mèo"
+      ],
+      "th": [
+        "สัตว์เลี้ยง",
+        "สุนัข",
+        "แมว"
+      ],
+      "tl": [
+        "alaga",
+        "aso",
+        "pusa"
+      ]
+    },
+    "waterMeter": {
+      "zh": [
+        "水費",
+        "繳水費",
+        "停水",
+        "水表",
+        "用水"
+      ],
+      "en": [
+        "water bill",
+        "water"
+      ],
+      "id": [
+        "tagihan air",
+        "air"
+      ],
+      "vi": [
+        "tiền nước",
+        "nước"
+      ],
+      "th": [
+        "ค่าน้ำ",
+        "น้ำประปา"
+      ],
+      "tl": [
+        "bayad sa tubig",
+        "tubig"
+      ]
+    },
+    "essentialGoods": {
+      "zh": [
+        "物價",
+        "菜價",
+        "民生物資"
+      ],
+      "en": [
+        "prices",
+        "groceries"
+      ],
+      "id": [
+        "harga",
+        "sembako"
+      ],
+      "vi": [
+        "giá cả",
+        "hàng thiết yếu"
+      ],
+      "th": [
+        "ราคาสินค้า"
+      ],
+      "tl": [
+        "presyo"
+      ]
+    },
+    "library": {
+      "zh": [
+        "借書",
+        "還書",
+        "圖書館",
+        "書"
+      ],
+      "en": [
+        "library",
+        "borrow books",
+        "book"
+      ],
+      "id": [
+        "perpustakaan",
+        "pinjam buku",
+        "buku"
+      ],
+      "vi": [
+        "thư viện",
+        "mượn sách",
+        "sách"
+      ],
+      "th": [
+        "ห้องสมุด",
+        "ยืมหนังสือ",
+        "หนังสือ"
+      ],
+      "tl": [
+        "aklatan",
+        "libro"
+      ]
+    },
+    "locationSearch": {
+      "zh": [
+        "附近",
+        "廁所",
+        "哺乳室",
+        "AED",
+        "充電",
+        "哪裡有"
+      ],
+      "en": [
+        "nearby",
+        "toilet",
+        "restroom",
+        "nursing room",
+        "aed"
+      ],
+      "id": [
+        "terdekat",
+        "toilet",
+        "ruang menyusui"
+      ],
+      "vi": [
+        "gần đây",
+        "nhà vệ sinh",
+        "phòng cho con bú"
+      ],
+      "th": [
+        "ใกล้ฉัน",
+        "ห้องน้ำ",
+        "ห้องให้นม"
+      ],
+      "tl": [
+        "malapit",
+        "banyo",
+        "cr"
+      ]
+    },
+    "zoo": {
+      "zh": [
+        "動物園",
+        "動物",
+        "熊貓"
+      ],
+      "en": [
+        "zoo",
+        "animals",
+        "panda"
+      ],
+      "id": [
+        "kebun binatang"
+      ],
+      "vi": [
+        "sở thú",
+        "vườn thú"
+      ],
+      "th": [
+        "สวนสัตว์"
+      ],
+      "tl": [
+        "zoo"
+      ]
+    },
+    "easyRead": {
+      "zh": [
+        "看不懂",
+        "看不懂的通知",
+        "翻譯",
+        "白話",
+        "公文"
+      ],
+      "en": [
+        "translate",
+        "explain",
+        "i don't understand"
+      ],
+      "id": [
+        "terjemahan",
+        "tidak mengerti"
+      ],
+      "vi": [
+        "dịch",
+        "không hiểu"
+      ],
+      "th": [
+        "แปล",
+        "ไม่เข้าใจ"
+      ],
+      "tl": [
+        "isalin",
+        "hindi maintindihan"
+      ]
+    }
+  },
+  "microservice": [
+    {
+      "id": "migrant-phone",
+      "title": "求助電話",
+      "description": "1955 移工專線、110 報警、119 消防救護、113 保護專線、1990 外籍人士諮詢、1999 市民熱線",
+      "path": "/information/phone",
+      "keywords": {
+        "zh": [
+          "1955",
+          "移工專線",
+          "勞工申訴",
+          "老闆欠薪",
+          "被扣薪水",
+          "雇主問題",
+          "仲介問題",
+          "被打",
+          "求救",
+          "緊急電話",
+          "110",
+          "119",
+          "113",
+          "1990",
+          "家暴",
+          "性騷擾"
+        ],
+        "en": [
+          "1955",
+          "migrant worker hotline",
+          "emergency",
+          "help",
+          "unpaid wages",
+          "employer problem",
+          "broker",
+          "abuse",
+          "harassment"
+        ],
+        "id": [
+          "1955",
+          "hotline pekerja migran",
+          "darurat",
+          "tolong",
+          "gaji tidak dibayar",
+          "majikan",
+          "agensi",
+          "kekerasan",
+          "pelecehan"
+        ],
+        "vi": [
+          "1955",
+          "đường dây nóng lao động",
+          "khẩn cấp",
+          "giúp đỡ",
+          "nợ lương",
+          "chủ thuê",
+          "môi giới",
+          "bạo lực",
+          "quấy rối"
+        ],
+        "th": [
+          "1955",
+          "สายด่วนแรงงาน",
+          "ฉุกเฉิน",
+          "ช่วยด้วย",
+          "ค้างค่าจ้าง",
+          "นายจ้าง",
+          "นายหน้า",
+          "ถูกทำร้าย"
+        ],
+        "tl": [
+          "1955",
+          "hotline",
+          "emergency",
+          "tulong",
+          "hindi binayaran",
+          "amo",
+          "ahensya",
+          "pang-aabuso"
+        ]
+      }
+    },
+    {
+      "id": "migrant-line",
+      "title": "1955 移工專線 LINE",
+      "description": "中文、印尼文、越南文、泰文、英文版 LINE 官方帳號",
+      "path": "/information/line",
+      "keywords": {
+        "zh": [
+          "LINE",
+          "賴",
+          "1955 LINE",
+          "線上諮詢",
+          "傳訊息"
+        ],
+        "en": [
+          "line",
+          "chat",
+          "message",
+          "online consultation"
+        ],
+        "id": [
+          "line",
+          "chat",
+          "pesan",
+          "konsultasi online"
+        ],
+        "vi": [
+          "line",
+          "nhắn tin",
+          "tư vấn trực tuyến"
+        ],
+        "th": [
+          "ไลน์",
+          "line",
+          "แชท",
+          "ส่งข้อความ"
+        ],
+        "tl": [
+          "line",
+          "chat",
+          "mensahe"
+        ]
+      }
+    },
+    {
+      "id": "migrant-facebook",
+      "title": "Facebook 粉絲專頁",
+      "description": "1955、勞動力重建運用處、印尼、越南、菲律賓代表處等粉絲專頁",
+      "path": "/information/facebook",
+      "keywords": {
+        "zh": [
+          "Facebook",
+          "臉書",
+          "FB",
+          "粉絲專頁",
+          "代表處",
+          "辦事處",
+          "印尼代表處",
+          "越南辦事處",
+          "菲律賓"
+        ],
+        "en": [
+          "facebook",
+          "fb",
+          "embassy",
+          "representative office",
+          "meco",
+          "kdei",
+          "veco"
+        ],
+        "id": [
+          "facebook",
+          "kdei",
+          "kantor perwakilan",
+          "kbri"
+        ],
+        "vi": [
+          "facebook",
+          "văn phòng kinh tế văn hóa việt nam",
+          "veco",
+          "đại sứ quán"
+        ],
+        "th": [
+          "เฟซบุ๊ก",
+          "facebook",
+          "สำนักงานตัวแทน"
+        ],
+        "tl": [
+          "facebook",
+          "meco",
+          "embahada"
+        ]
+      }
+    },
+    {
+      "id": "migrant-website",
+      "title": "相關網站",
+      "description": "外國人勞動權益網、勞保局移工線上查詢、臺北市新住民網站等",
+      "path": "/information/website",
+      "keywords": {
+        "zh": [
+          "網站",
+          "勞動權益",
+          "勞保",
+          "健保",
+          "查詢勞保",
+          "新住民",
+          "權益",
+          "法規"
+        ],
+        "en": [
+          "website",
+          "labor rights",
+          "labor insurance",
+          "workers rights"
+        ],
+        "id": [
+          "situs",
+          "hak pekerja",
+          "asuransi tenaga kerja"
+        ],
+        "vi": [
+          "trang web",
+          "quyền lao động",
+          "bảo hiểm lao động"
+        ],
+        "th": [
+          "เว็บไซต์",
+          "สิทธิแรงงาน",
+          "ประกันแรงงาน"
+        ],
+        "tl": [
+          "website",
+          "karapatan ng manggagawa"
+        ]
+      }
+    },
+    {
+      "id": "migrant-youtube",
+      "title": "YouTube 影片",
+      "description": "臺北移工學校、新住民全球新聞網",
+      "path": "/information/youtube",
+      "keywords": {
+        "zh": [
+          "YouTube",
+          "影片",
+          "移工學校",
+          "學中文",
+          "新聞"
+        ],
+        "en": [
+          "youtube",
+          "video",
+          "learn chinese",
+          "news"
+        ],
+        "id": [
+          "youtube",
+          "video",
+          "belajar bahasa mandarin",
+          "berita"
+        ],
+        "vi": [
+          "youtube",
+          "video",
+          "học tiếng trung",
+          "tin tức"
+        ],
+        "th": [
+          "ยูทูบ",
+          "วิดีโอ",
+          "เรียนภาษาจีน",
+          "ข่าว"
+        ],
+        "tl": [
+          "youtube",
+          "video",
+          "balita"
+        ]
+      }
+    },
+    {
+      "id": "migrant-radio",
+      "title": "移工廣播節目",
+      "description": "台灣廣播公司移工節目",
+      "path": "/information/radio",
+      "keywords": {
+        "zh": [
+          "廣播",
+          "電台",
+          "移工節目",
+          "聽廣播"
+        ],
+        "en": [
+          "radio",
+          "radio program"
+        ],
+        "id": [
+          "radio",
+          "siaran"
+        ],
+        "vi": [
+          "đài phát thanh",
+          "radio"
+        ],
+        "th": [
+          "วิทยุ",
+          "รายการวิทยุ"
+        ],
+        "tl": [
+          "radyo"
+        ]
+      }
+    },
+    {
+      "id": "migrant-living-map",
+      "title": "生活地圖",
+      "description": "穆斯林祈禱室、穆斯林友善餐廳與店家",
+      "path": "/living-map",
+      "keywords": {
+        "zh": [
+          "祈禱室",
+          "禮拜",
+          "清真",
+          "穆斯林",
+          "清真餐廳",
+          "友善餐廳",
+          "地圖",
+          "吃飯",
+          "伊斯蘭"
+        ],
+        "en": [
+          "prayer room",
+          "pray",
+          "halal",
+          "muslim",
+          "halal food",
+          "mosque",
+          "map"
+        ],
+        "id": [
+          "musholla",
+          "mushola",
+          "sholat",
+          "salat",
+          "halal",
+          "makanan halal",
+          "masjid",
+          "peta",
+          "muslim"
+        ],
+        "vi": [
+          "phòng cầu nguyện",
+          "halal",
+          "hồi giáo",
+          "bản đồ",
+          "đồ ăn halal"
+        ],
+        "th": [
+          "ห้องละหมาด",
+          "ละหมาด",
+          "ฮาลาล",
+          "มุสลิม",
+          "อาหารฮาลาล",
+          "มัสยิด",
+          "แผนที่"
+        ],
+        "tl": [
+          "prayer room",
+          "halal",
+          "muslim",
+          "mapa",
+          "pagkain"
+        ]
+      }
+    },
+    {
+      "id": "migrant-events",
+      "title": "勞動局最新消息",
+      "description": "臺北市勞動局公告、法規修正、活動",
+      "path": "/events",
+      "keywords": {
+        "zh": [
+          "最新消息",
+          "公告",
+          "活動",
+          "勞動局",
+          "法規",
+          "新規定",
+          "講座"
+        ],
+        "en": [
+          "news",
+          "announcement",
+          "events",
+          "labor bureau",
+          "new rules"
+        ],
+        "id": [
+          "berita",
+          "pengumuman",
+          "acara",
+          "dinas tenaga kerja",
+          "aturan baru"
+        ],
+        "vi": [
+          "tin tức",
+          "thông báo",
+          "sự kiện",
+          "sở lao động",
+          "quy định mới"
+        ],
+        "th": [
+          "ข่าว",
+          "ประกาศ",
+          "กิจกรรม",
+          "กรมแรงงาน",
+          "กฎใหม่"
+        ],
+        "tl": [
+          "balita",
+          "anunsyo",
+          "kaganapan",
+          "bagong patakaran"
+        ]
+      }
+    }
+  ]
+}
