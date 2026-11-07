@@ -29,6 +29,7 @@ enum MyServiceItemId {
   library,
   locationSearch,
   zoo,
+  easyRead,
   ;
 }
 
@@ -182,6 +183,13 @@ extension MyServiceIdExt on MyServiceItemId {
           icon: Assets.svg.iconZoo24.svg(),
           category: MyServiceCategory.explore,
           destinationUrl: '',
+        ),
+      MyServiceItemId.easyRead => MyServiceItem(
+          title: '看得懂',
+          description: '把看不懂的市政資訊變好懂',
+          icon: Assets.svg.iconEasyRead24.svg(),
+          category: MyServiceCategory.cityService,
+          destinationUrl: 'https://www.gov.taipei/',
         ),
     };
   }
