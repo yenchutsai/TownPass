@@ -65,12 +65,13 @@ class ServiceSearchEngine {
     if (q.isEmpty) {
       return const [];
     }
+    final List<String> qTokens = tokens(query);
     final List<SearchResult> results = [];
     for (final _Prepared p in _entries) {
       double best = 0;
       String matched = '';
       for (final _Field f in p.fields) {
-        final double s = _score(q, f.normalized) * f.weight;
+        final double s = _bestScore(q, qTokens, f) * f.weight;
         if (s > best) {
           best = s;
           matched = f.raw;
@@ -85,6 +86,84 @@ class ServiceSearchEngine {
       return byScore != 0 ? byScore : a.entry.title.compareTo(b.entry.title);
     });
     return results.take(limit).toList();
+  }
+
+  static double _bestScore(String q, List<String> qTokens, _Field f) {
+    final double whole = _score(q, f.normalized);
+    final double words = _wordScore(qTokens, f.tokens);
+    return whole > words ? whole : words;
+  }
+
+  /// 拉丁文字逐字比對，順序不拘：「tree fallen」也能找到「fallen tree」。
+  /// 每個查詢字只要和某個關鍵字的字相同、前幾個字母相同，或打錯一兩個字母都算符合。
+  static double _wordScore(List<String> qTokens, List<String> fTokens) {
+    if (qTokens.isEmpty || fTokens.isEmpty) {
+      return 0;
+    }
+    int matched = 0;
+    for (final String qt in qTokens) {
+      if (fTokens.any((String ft) => _wordMatches(qt, ft))) {
+        matched++;
+      }
+    }
+    if (matched == 0) {
+      return 0;
+    }
+    final double coverage = matched / qTokens.length;
+    if (coverage == 1) {
+      // 所有查詢字都對到：關鍵字的字越少（越精準）分數越高。
+      return fTokens.length <= qTokens.length ? 68 : 62;
+    }
+    // 只對到一部分（例如「my boss unpaid wages」裡的 unpaid、wages）。
+    return qTokens.length >= 2 && coverage >= 0.5 ? 55 * coverage : 0;
+  }
+
+  static bool _wordMatches(String q, String f) {
+    if (q == f) {
+      return true;
+    }
+    if (q.length >= 3 && (f.startsWith(q) || q.startsWith(f) && f.length >= 3)) {
+      return true; // 前綴：hosp → hospital、trees → tree
+    }
+    if (q.length >= 4) {
+      final int allowed = q.length <= 6 ? 1 : 2;
+      return _levenshtein(q, f) <= allowed;
+    }
+    return false;
+  }
+
+  /// 拉丁文字切成字（小寫、去聲調）。中文、泰文不切字，回傳空清單。
+  static List<String> tokens(String input) {
+    final List<String> words = [];
+    final StringBuffer cur = StringBuffer();
+    void flush() {
+      if (cur.isNotEmpty) {
+        words.add(cur.toString());
+        cur.clear();
+      }
+    }
+
+    for (final int rune in input.toLowerCase().runes) {
+      int r = rune;
+      if (r >= 0xFF01 && r <= 0xFF5E) {
+        r -= 0xFEE0;
+      }
+      final String folded = _foldLatin[String.fromCharCode(r)] ?? String.fromCharCode(r);
+      for (final int c in folded.runes) {
+        final bool letterOrDigit = (c >= 0x30 && c <= 0x39) || (c >= 0x61 && c <= 0x7A);
+        if (letterOrDigit) {
+          cur.writeCharCode(c);
+        } else if (c >= 0x0300 && c <= 0x036F) {
+          continue; // 組合聲調符號
+        } else if (c < 0x0250) {
+          flush(); // 空白、標點
+        } else {
+          return const []; // 含中文或泰文：不逐字比對
+        }
+      }
+    }
+    flush();
+    return words.length >= 2 ? words : const [];
   }
 
   static double _score(String q, String f) {
@@ -249,10 +328,15 @@ class ServiceSearchEngine {
 }
 
 class _Field {
-  _Field(this.raw, this.weight) : normalized = ServiceSearchEngine.normalize(raw);
+  _Field(this.raw, this.weight)
+      : normalized = ServiceSearchEngine.normalize(raw),
+        tokens = ServiceSearchEngine.tokens(raw).isEmpty && ServiceSearchEngine._isLatin(ServiceSearchEngine.normalize(raw))
+            ? [ServiceSearchEngine.normalize(raw)]
+            : ServiceSearchEngine.tokens(raw);
 
   final String raw;
   final String normalized;
+  final List<String> tokens;
   final double weight;
 }
 

@@ -55,6 +55,16 @@ void main() {
     ['hospitl', 'app-medicalAppointment'],
     ['pulis', 'app-police'],
     ['1955', 'migrant-phone'],
+    // 字的順序不同、單複數、句子裡有多餘的字
+    ['fallen tree', 'app-disasterReport'],
+    ['tree fallen', 'app-disasterReport'],
+    ['trees fallen', 'app-disasterReport'],
+    ['room prayer', 'migrant-living-map'],
+    ['wages unpaid', 'migrant-phone'],
+    ['my boss unpaid wages', 'migrant-phone'],
+    ['bill water', 'app-waterMeter'],
+    ['tumbang pohon', 'app-disasterReport'],
+    ['nguyen cau phong', 'migrant-living-map'],
   ];
 
   for (final c in cases) {
