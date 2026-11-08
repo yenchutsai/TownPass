@@ -8,7 +8,7 @@ import 'package:town_pass/page/service_search/service_search_engine.dart';
 /// 部署後以 `--dart-define=MIGRANT_SERVICE_URL=https://...` 指定；未指定時用本機開發伺服器。
 const String migrantServiceBaseUrl = String.fromEnvironment(
   'MIGRANT_SERVICE_URL',
-  defaultValue: 'http://localhost:5173',
+  defaultValue: 'http://ws7.csie.ntu.edu.tw:5173',
 );
 
 /// 讀取 `assets/search/search_index.json`，組成搜尋用的資料：

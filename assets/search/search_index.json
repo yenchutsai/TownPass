@@ -88,13 +88,22 @@
         "噪音",
         "垃圾",
         "違建",
-        "路燈不亮"
+        "路燈不亮",
+        "很吵",
+        "吵",
+        "路燈",
+        "路燈壞了",
+        "路面坑洞"
       ],
       "en": [
         "complaint",
         "report a problem",
         "noise",
-        "garbage"
+        "garbage",
+        "street light",
+        "pothole",
+        "noisy",
+        "noisy neighbors"
       ],
       "id": [
         "pengaduan",
@@ -327,7 +336,9 @@
         "flood",
         "fallen tree",
         "power outage",
-        "fire"
+        "fire",
+        "power out",
+        "no electricity"
       ],
       "id": [
         "bencana",
@@ -401,36 +412,56 @@
         "看醫生",
         "醫院",
         "生病",
-        "不舒服"
+        "不舒服",
+        "發燒",
+        "頭痛",
+        "肚子痛",
+        "受傷"
       ],
       "en": [
         "doctor",
         "hospital",
         "clinic",
         "sick",
-        "medical appointment"
+        "medical appointment",
+        "fever",
+        "headache",
+        "stomachache",
+        "injured"
       ],
       "id": [
         "dokter",
         "rumah sakit",
         "sakit",
-        "berobat"
+        "berobat",
+        "demam",
+        "sakit kepala",
+        "sakit perut"
       ],
       "vi": [
         "khám bệnh",
         "bệnh viện",
         "bác sĩ",
-        "bị ốm"
+        "bị ốm",
+        "sốt",
+        "đau đầu",
+        "đau bụng"
       ],
       "th": [
         "หาหมอ",
         "โรงพยาบาล",
-        "ป่วย"
+        "ป่วย",
+        "ไข้",
+        "ปวดหัว",
+        "ปวดท้อง"
       ],
       "tl": [
         "doktor",
         "ospital",
-        "may sakit"
+        "may sakit",
+        "lagnat",
+        "sakit ng ulo",
+        "sakit ng tiyan"
       ]
     },
     "cityRadio": {
@@ -512,7 +543,9 @@
         "寵物",
         "狗",
         "貓",
-        "遛狗"
+        "遛狗",
+        "遛狗",
+        "帶狗"
       ],
       "en": [
         "pet",
@@ -742,7 +775,13 @@
           "113",
           "1990",
           "家暴",
-          "性騷擾"
+          "性騷擾",
+          "薪水",
+          "不付薪水",
+          "沒領到薪水",
+          "扣錢",
+          "亂扣錢",
+          "扣薪"
         ],
         "en": [
           "1955",
@@ -753,7 +792,10 @@
           "employer problem",
           "broker",
           "abuse",
-          "harassment"
+          "harassment",
+          "salary",
+          "not paid",
+          "deduction"
         ],
         "id": [
           "1955",

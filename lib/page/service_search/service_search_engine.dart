@@ -43,17 +43,14 @@ class SearchResult {
 
 class ServiceSearchEngine {
   ServiceSearchEngine(List<SearchEntry> entries)
-      : _entries = [
-          for (final SearchEntry e in entries)
-            _Prepared(
-              e,
-              [
-                _Field(e.title, 1.0),
-                for (final String k in e.keywords) _Field(k, 0.9),
-                _Field(e.description, 0.6),
-              ],
-            ),
-        ];
+    : _entries = [
+        for (final SearchEntry e in entries)
+          _Prepared(e, [
+            _Field(e.title, 1.0),
+            for (final String k in e.keywords) _Field(k, 0.9),
+            _Field(e.description, 0.7),
+          ]),
+      ];
 
   final List<_Prepared> _entries;
 
@@ -65,20 +62,36 @@ class ServiceSearchEngine {
     if (q.isEmpty) {
       return const [];
     }
-    final List<String> qTokens = tokens(query);
+    final List<String> qTokens = [
+      for (final String t in tokens(query))
+        if (!_stopWords.contains(t)) t,
+    ];
+    final bool latinQuery = _isLatin(q);
     final List<SearchResult> results = [];
     for (final _Prepared p in _entries) {
+      // 1. 單一欄位的比對：完全相同、欄位包含查詢、打錯字。
       double best = 0;
       String matched = '';
       for (final _Field f in p.fields) {
-        final double s = _bestScore(q, qTokens, f) * f.weight;
+        final double s = _score(q, f.normalized) * f.weight;
         if (s > best) {
           best = s;
           matched = f.raw;
         }
       }
+      // 2. 涵蓋率：查詢裡有多少部分被這個服務的關鍵字「解釋」到。
+      //    例如「labor bureau news」三個字都對到勞動局最新消息，只對到「news」的 YouTube 分數較低。
+      final _Coverage cov = latinQuery && qTokens.length >= 2
+          ? _wordCoverage(qTokens, p.fields)
+          : _charCoverage(q, p.fields);
+      if (cov.score > best) {
+        best = cov.score;
+        matched = cov.matched;
+      }
       if (best >= minScore) {
-        results.add(SearchResult(p.entry, best, matched));
+        // 分數相同時，標題和查詢比較像的排前面（例如「親子活動」→ 親子館）。
+        final double titleBonus = latinQuery ? 0 : 3 * _bigramDice(q, p.fields.first.normalized);
+        results.add(SearchResult(p.entry, best + titleBonus, matched));
       }
     }
     results.sort((a, b) {
@@ -88,48 +101,168 @@ class ServiceSearchEngine {
     return results.take(limit).toList();
   }
 
-  static double _bestScore(String q, List<String> qTokens, _Field f) {
-    final double whole = _score(q, f.normalized);
-    final double words = _wordScore(qTokens, f.tokens);
-    return whole > words ? whole : words;
-  }
-
-  /// 拉丁文字逐字比對，順序不拘：「tree fallen」也能找到「fallen tree」。
-  /// 每個查詢字只要和某個關鍵字的字相同、前幾個字母相同，或打錯一兩個字母都算符合。
-  static double _wordScore(List<String> qTokens, List<String> fTokens) {
-    if (qTokens.isEmpty || fTokens.isEmpty) {
-      return 0;
-    }
-    int matched = 0;
-    for (final String qt in qTokens) {
-      if (fTokens.any((String ft) => _wordMatches(qt, ft))) {
-        matched++;
+  /// 英文、印尼文、越南文（無聲調）、菲律賓文：以「字」為單位，順序不拘。
+  /// 一個關鍵字的每個字都出現在查詢裡，就算這個關鍵字命中；所有命中的關鍵字一起計算涵蓋了查詢的幾個字。
+  static _Coverage _wordCoverage(List<String> qTokens, List<_Field> fields) {
+    final List<double> covered = List<double>.filled(qTokens.length, 0);
+    String matched = '';
+    int matchedLen = 0;
+    double partial = 0;
+    String partialMatched = '';
+    for (final _Field f in fields) {
+      if (f.tokens.isEmpty) {
+        continue;
+      }
+      final List<int> hits = [
+        for (int i = 0; i < qTokens.length; i++)
+          if (f.tokens.any((String ft) => _wordMatches(qTokens[i], ft))) i,
+      ];
+      final bool wholeKeyword = f.tokens.every((String ft) => qTokens.any((String qt) => _wordMatches(qt, ft)));
+      if (wholeKeyword && hits.isNotEmpty) {
+        for (final int i in hits) {
+          for (final String ft in f.tokens) {
+            final double qual = _wordQuality(qTokens[i], ft);
+            if (qual > covered[i]) {
+              covered[i] = qual;
+            }
+          }
+        }
+        if (f.tokens.length > matchedLen) {
+          matchedLen = f.tokens.length;
+          matched = f.raw;
+        }
+      } else if (qTokens.length >= 3 && hits.length / qTokens.length >= 0.5) {
+        // 關鍵字只有一部分出現，但查詢夠長、對到一半以上的字。
+        final double s = 40 * hits.length / qTokens.length * f.weight;
+        if (s > partial) {
+          partial = s;
+          partialMatched = f.raw;
+        }
       }
     }
-    if (matched == 0) {
-      return 0;
+    final double n = covered.fold(0, (double a, double b) => a + b);
+    if (n == 0) {
+      return _Coverage(partial, partialMatched);
     }
-    final double coverage = matched / qTokens.length;
-    if (coverage == 1) {
-      // 所有查詢字都對到：關鍵字的字越少（越精準）分數越高。
-      return fTokens.length <= qTokens.length ? 68 : 62;
-    }
-    // 只對到一部分（例如「my boss unpaid wages」裡的 unpaid、wages）。
-    return qTokens.length >= 2 && coverage >= 0.5 ? 55 * coverage : 0;
+    final double s = (50 + 25 * n / qTokens.length) * 0.9;
+    return s >= partial ? _Coverage(s, matched) : _Coverage(partial, partialMatched);
   }
 
-  static bool _wordMatches(String q, String f) {
+  /// 中文、泰文：查詢裡被關鍵字蓋到的字數比例。例如「小孩發燒」裡，
+  /// 只蓋到「小孩」的親子館（2/4）會輸給蓋到「發燒」又蓋到更多字的服務。
+  static _Coverage _charCoverage(String q, List<_Field> fields) {
+    final List<int> qr = q.runes.toList();
+    if (qr.length < 2) {
+      return const _Coverage(0, '');
+    }
+    final List<bool> covered = List<bool>.filled(qr.length, false);
+    String matched = '';
+    int matchedLen = 0;
+    for (final _Field f in fields) {
+      final List<int> fr = f.normalized.runes.toList();
+      if (fr.isEmpty || fr.length >= qr.length) {
+        continue;
+      }
+      // 一個字的關鍵字（例如「狗」「書」）只在關鍵字欄位採用，避免說明裡的單字亂中。
+      if (fr.length == 1 && f.weight != 0.9) {
+        continue;
+      }
+      bool hit = false;
+      for (int i = 0; i + fr.length <= qr.length; i++) {
+        bool same = true;
+        for (int j = 0; j < fr.length; j++) {
+          if (qr[i + j] != fr[j]) {
+            same = false;
+            break;
+          }
+        }
+        if (same) {
+          hit = true;
+          for (int j = 0; j < fr.length; j++) {
+            covered[i + j] = true;
+          }
+        }
+      }
+      if (hit && fr.length > matchedLen) {
+        matchedLen = fr.length;
+        matched = f.raw;
+      }
+    }
+    final int n = covered.where((bool c) => c).length;
+    if (n == 0) {
+      return const _Coverage(0, '');
+    }
+    return _Coverage((50 + 25 * n / qr.length) * 0.9, matched);
+  }
+
+  /// 不影響意思的英文常用字，計算涵蓋率時忽略。
+  static const Set<String> _stopWords = {
+    'a',
+    'an',
+    'the',
+    'my',
+    'me',
+    'i',
+    'is',
+    'are',
+    'was',
+    'were',
+    'am',
+    'on',
+    'at',
+    'in',
+    'for',
+    'to',
+    'of',
+    'and',
+    'or',
+    'can',
+    'where',
+    'how',
+    'what',
+    'do',
+    'does',
+    'did',
+    'this',
+    'that',
+    'it',
+    'please',
+    'want',
+    'need',
+    'with',
+    'from',
+    'yang',
+    'di',
+    'ke',
+    'saya',
+    'aku',
+    'toi',
+    'cua',
+    'ang',
+    'ng',
+    'sa',
+  };
+
+  static bool _wordMatches(String q, String f) => _wordQuality(q, f) > 0;
+
+  /// 兩個字有多像：完全相同 1、前綴相同 0.8（短的那個至少 4 個字母，例如 trees/tree）、
+  /// 打錯字 0.6（7 個字母以上可錯 1 個、9 個以上可錯 2 個；broken/broker 這種 6 個字母的不算），其他 0。
+  /// 規則刻意收緊：測試發現 new/news、weather/water、broken/broker、took/book 都被誤當成同一個字。
+  static double _wordQuality(String q, String f) {
     if (q == f) {
-      return true;
+      return 1;
     }
-    if (q.length >= 3 && (f.startsWith(q) || q.startsWith(f) && f.length >= 3)) {
-      return true; // 前綴：hosp → hospital、trees → tree
+    final int shorter = q.length < f.length ? q.length : f.length;
+    if (shorter >= 4 && (f.startsWith(q) || q.startsWith(f))) {
+      return 0.8;
     }
-    if (q.length >= 4) {
-      final int allowed = q.length <= 6 ? 1 : 2;
-      return _levenshtein(q, f) <= allowed;
+    if (q.length >= 7 && f.length >= 7) {
+      final int allowed = q.length >= 9 ? 2 : 1;
+      if (_levenshtein(q, f) <= allowed) {
+        return 0.6;
+      }
     }
-    return false;
+    return 0;
   }
 
   /// 拉丁文字切成字（小寫、去聲調）。中文、泰文不切字，回傳空清單。
@@ -184,10 +317,6 @@ class ServiceSearchEngine {
       }
       return 80;
     }
-    if (q.contains(f) && f.runes.length >= 2) {
-      // 輸入是一句話，裡面包含關鍵字，例如「我收到罰單」包含「罰單」。
-      return 70;
-    }
     if (latin) {
       final int dist = _levenshtein(q, f);
       final int allowed = q.length <= 4 ? 1 : (q.length <= 8 ? 2 : 3);
@@ -204,7 +333,10 @@ class ServiceSearchEngine {
       return 0;
     }
     final double dice = _bigramDice(q, f);
-    return dice >= 0.4 ? 50 * dice : 0;
+    // 查詢的字有多少出現在欄位裡（順序不拘）：「借書」→「圖書借閱」、「繳水費」→「繳交水費」。
+    final double inField = _queryInField(q, f);
+    final double best = dice > inField ? dice : inField;
+    return best >= 0.4 ? 50 * best : 0;
   }
 
   /// 小寫、全形轉半形、拉丁字母去聲調、去空白和標點。泰文、中文保留原字。
@@ -247,6 +379,27 @@ class ServiceSearchEngine {
 
   static bool _isLatin(String s) => s.runes.every((c) => c < 0x0250);
 
+  /// 不帶意思的中文虛字，計算「查詢的字出現在欄位裡」時不算。
+  static const String _filler = '的了我是在有和要想去把被就也都很嗎呢吧啊';
+
+  /// 中文、泰文：查詢的兩字組合、單字各有多少比例出現在欄位裡（取較高者，單字打八折）。
+  /// 只用在欄位比查詢長、而且整句對不上的時候。
+  static double _queryInField(String q, String f) {
+    final List<int> qr = [
+      for (final int c in q.runes)
+        if (!_filler.contains(String.fromCharCode(c))) c,
+    ];
+    if (qr.length < 2 || f.runes.length <= qr.length) {
+      return 0;
+    }
+    final String qs = String.fromCharCodes(qr);
+    final List<String> grams = _bigrams(qs);
+    final double bigramRatio = grams.where(f.contains).length / grams.length;
+    final double charRatio = qr.where((int c) => f.contains(String.fromCharCode(c))).length / qr.length;
+    final double c = 0.8 * charRatio;
+    return bigramRatio > c ? bigramRatio : c;
+  }
+
   static double _bigramDice(String a, String b) {
     final List<String> ga = _bigrams(a);
     final List<String> gb = _bigrams(b);
@@ -273,7 +426,9 @@ class ServiceSearchEngine {
     if (r.length < 2) {
       return r.isEmpty ? const [] : [String.fromCharCodes(r)];
     }
-    return [for (int i = 0; i < r.length - 1; i++) String.fromCharCodes([r[i], r[i + 1]])];
+    return [
+      for (int i = 0; i < r.length - 1; i++) String.fromCharCodes([r[i], r[i + 1]]),
+    ];
   }
 
   static int _levenshtein(String a, String b) {
@@ -329,10 +484,11 @@ class ServiceSearchEngine {
 
 class _Field {
   _Field(this.raw, this.weight)
-      : normalized = ServiceSearchEngine.normalize(raw),
-        tokens = ServiceSearchEngine.tokens(raw).isEmpty && ServiceSearchEngine._isLatin(ServiceSearchEngine.normalize(raw))
-            ? [ServiceSearchEngine.normalize(raw)]
-            : ServiceSearchEngine.tokens(raw);
+    : normalized = ServiceSearchEngine.normalize(raw),
+      tokens =
+          ServiceSearchEngine.tokens(raw).isEmpty && ServiceSearchEngine._isLatin(ServiceSearchEngine.normalize(raw))
+          ? [ServiceSearchEngine.normalize(raw)]
+          : ServiceSearchEngine.tokens(raw);
 
   final String raw;
   final String normalized;
@@ -345,4 +501,11 @@ class _Prepared {
 
   final SearchEntry entry;
   final List<_Field> fields;
+}
+
+class _Coverage {
+  const _Coverage(this.score, this.matched);
+
+  final double score;
+  final String matched;
 }

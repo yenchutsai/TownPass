@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:town_pass/gen/assets.gen.dart';
+import 'package:town_pass/page/service_search/semantic_search.dart';
 import 'package:town_pass/service/account_service.dart';
 import 'package:town_pass/service/device_service.dart';
 import 'package:town_pass/service/geo_locator_service.dart';
@@ -12,9 +13,7 @@ import 'package:town_pass/service/subscription_service.dart';
 import 'package:town_pass/util/tp_colors.dart';
 import 'package:town_pass/util/tp_route.dart';
 
-const _transparentStatusBar = SystemUiOverlayStyle(
-  statusBarColor: Colors.transparent,
-);
+const _transparentStatusBar = SystemUiOverlayStyle(statusBarColor: Colors.transparent);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,6 +37,8 @@ Future<void> initServices() async {
   await Get.putAsync<NotificationService>(() async => await NotificationService().init());
 
   Get.put<SubscriptionService>(SubscriptionService());
+  // 服務搜尋預設使用 AI 語意搜尋：在背景下載並載入模型，不阻擋 App 啟動。
+  Get.put<SemanticSearch>(SemanticSearch(), permanent: true).warmUp();
 }
 
 class MyApp extends StatelessWidget {
@@ -50,9 +51,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         scaffoldBackgroundColor: TPColors.grayscale50,
-        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          backgroundColor: TPColors.white,
-        ),
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(backgroundColor: TPColors.white),
         colorScheme: ColorScheme.fromSeed(seedColor: TPColors.primary500),
         appBarTheme: const AppBarTheme(
           centerTitle: true,
@@ -61,16 +60,16 @@ class MyApp extends StatelessWidget {
           actionsIconTheme: IconThemeData(size: 56),
         ),
         actionIconTheme: ActionIconThemeData(
-          backButtonIconBuilder: (_) => Semantics(
-            excludeSemantics: true,
-            child: Assets.svg.iconArrowLeft.svg(width: 24, height: 24),
-          ),
+          backButtonIconBuilder: (_) =>
+              Semantics(excludeSemantics: true, child: Assets.svg.iconArrowLeft.svg(width: 24, height: 24)),
         ),
       ),
       debugShowCheckedModeBanner: false,
       initialRoute: TPRoute.main,
       onInit: () {
-        NotificationService.requestPermission();
+        if (!const bool.fromEnvironment('SKIP_NOTIFICATION_PROMPT')) {
+          NotificationService.requestPermission();
+        }
       },
       getPages: TPRoute.page,
     );

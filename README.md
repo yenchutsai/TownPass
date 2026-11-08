@@ -9,7 +9,7 @@
   - `appServices`：App 內建服務的同義詞，key 是 `MyServiceItemId` 的名稱；標題和說明會自動從 `my_service_model.dart` 帶入。
   - `microservice`：移工微服務（TownPass-Services）的頁面，`path` 是該頁的路由（例如 `/information/line`），`keywords` 依語言分組（`zh`、`en`、`id`、`vi`、`th`、`tl`）。
   - **新增頁面或關鍵字只要改這個檔案**。中文以外的關鍵字目前是初稿，請熟悉該語言的人確認。
-- 微服務網址：建置時用 `--dart-define=MIGRANT_SERVICE_URL=https://...` 指定，未指定時是 `http://localhost:5173`。
+- 微服務網址：建置時用 `--dart-define=MIGRANT_SERVICE_URL=https://...` 指定，未指定時是 `http://ws7.csie.ntu.edu.tw:5173`（隊友架在工作站的版本）。
 - 測試：`fvm flutter test test/service_search`
 - **AI 語意搜尋（選用）**：使用者在搜尋頁按「啟用 AI 語意搜尋」後，下載 EmbeddingGemma 2 Text 270M，搜尋結果下方多一區「可能相關」，依意思推薦（例如「my employer hit me」）。
   - 模型揭露：EmbeddingGemma 2 Text 270M（`embeddinggemma-2-text-270m`），LiteRT-LM 格式（`.litertlm`），Apache-2.0，來源 Hugging Face `litert-community/embeddinggemma-2-text-270m-litert-lm`（revision `9be6e8b9`，SHA-256 固定），推論框架 `flutter_edge_ai` + `flutter_edge_ai_litertlm`（MIT）。約 165 MB，只把文字轉成向量、不生成文字，全部在手機上計算。

@@ -13,8 +13,8 @@ import 'package:town_pass/util/tp_text.dart';
 /// 服務搜尋頁：輸入中文、英文、印尼文、越南文、泰文或菲律賓文，
 /// 用自己的說法（例如「我收到罰單」「musholla」）找到台北通裡的服務。
 ///
-/// 混合搜尋：先列關鍵字模糊搜尋的結果（準確、舊手機也能用），
-/// 啟用 AI 語意搜尋後，下方再列「可能相關」（依意思推薦，例如「雇主打我」）。
+/// 混合搜尋：先列關鍵字模糊搜尋的結果，下方再列 AI 語意搜尋的「可能相關」（依意思推薦，例如「雇主打我」）。
+/// 語意搜尋預設開啟（App 啟動時在背景載入）；只有模型無法使用時才只顯示關鍵字結果。
 class ServiceSearchController extends GetxController {
   final TextEditingController textController = TextEditingController();
   final RxString query = ''.obs;
@@ -37,9 +37,18 @@ class ServiceSearchController extends GetxController {
       _engine = ServiceSearchEngine(entries);
       ready.value = true;
       _run(query.value);
-      semantic.resumeIfEnabled(entries);
     });
     debounce<String>(query, _run, time: const Duration(milliseconds: 150));
+    // 監聽輸入框的完整狀態，而不只是文字改變：
+    // 注音、倉頡、日文等輸入法還在選字時（例如「ㄎㄢˇㄕㄨˋ」）先不搜尋；
+    // 選字結束（即使文字沒變，例如切換鍵盤時直接送出）就立刻搜尋。
+    textController.addListener(() {
+      final TextEditingValue v = textController.value;
+      final bool composing = v.composing.isValid && !v.composing.isCollapsed;
+      if (!composing && query.value != v.text) {
+        query.value = v.text;
+      }
+    });
     ever<SemanticState>(semantic.state, (SemanticState s) {
       if (s == SemanticState.ready) {
         _run(query.value);
@@ -47,8 +56,8 @@ class ServiceSearchController extends GetxController {
     });
   }
 
-  /// 使用者按下「啟用」：下載（約 165 MB，只需一次）並載入語意搜尋模型。
-  Future<void> enableAi() => semantic.enable(_entries);
+  /// 語意搜尋失敗時，使用者按「重新嘗試」。
+  Future<void> retryAi() => semantic.enable(_entries);
 
   void setQuery(String value) {
     textController.value = TextEditingValue(
@@ -109,13 +118,7 @@ class ServiceSearchView extends StatelessWidget {
             child: TextField(
               controller: c.textController,
               autofocus: true,
-              onChanged: (String v) {
-                // 注音、倉頡等輸入法還在選字時（例如「ㄎㄢˇㄕㄨˋ」），先不要搜尋，等選好字再搜。
-                if (c.textController.value.composing.isValid && !c.textController.value.composing.isCollapsed) {
-                  return;
-                }
-                c.query.value = v;
-              },
+              // 搜尋由 controller 監聽輸入框狀態觸發（含輸入法選字結束），見 ServiceSearchController.onInit。
               textInputAction: TextInputAction.search,
               style: TPTextStyles.h3Regular.copyWith(color: TPColors.grayscale900),
               decoration: InputDecoration(
@@ -147,7 +150,7 @@ class ServiceSearchView extends StatelessWidget {
                 return ListView(
                   children: [
                     _Examples(onTap: c.setQuery),
-                    _AiCard(controller: c, compact: false),
+                    _AiStatus(controller: c),
                   ],
                 );
               }
@@ -161,7 +164,7 @@ class ServiceSearchView extends StatelessWidget {
                     const _SectionHeader(title: '可能相關', subtitle: '由手機上的 AI 依意思推薦（EmbeddingGemma 2），僅供參考'),
                     for (final SearchResult r in c.aiResults) _ResultTile(result: r),
                   ],
-                  if (ai != SemanticState.ready) _AiCard(controller: c, compact: true),
+                  if (ai != SemanticState.ready) _AiStatus(controller: c),
                 ],
               );
             }),
@@ -342,12 +345,11 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-/// 啟用 AI 語意搜尋的卡片：說明用途、下載大小，下載時顯示進度。
-class _AiCard extends StatelessWidget {
-  const _AiCard({required this.controller, required this.compact});
+/// AI 語意搜尋的狀態：準備中顯示進度，失敗時提供重新嘗試；準備好就不顯示。
+class _AiStatus extends StatelessWidget {
+  const _AiStatus({required this.controller});
 
   final ServiceSearchController controller;
-  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -355,63 +357,34 @@ class _AiCard extends StatelessWidget {
     return Obx(() {
       final SemanticState state = semantic.state.value;
       if (state == SemanticState.ready) {
-        return compact
-            ? const SizedBox.shrink()
-            : const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                child: TPText(
-                  '已啟用 AI 語意搜尋：可以直接描述您遇到的狀況，例如「雇主打我」「đau bụng」。',
-                  style: TPTextStyles.caption,
-                  color: TPColors.primary700,
-                ),
-              );
+        return const SizedBox.shrink();
       }
       final int? progress = semantic.downloadProgress.value;
-      return Container(
-        margin: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(color: TPColors.primary50, borderRadius: BorderRadius.circular(12)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      final bool failed = state == SemanticState.failed;
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+        child: Row(
           children: [
-            TPText(compact ? '找不到想要的服務？' : 'AI 語意搜尋', style: TPTextStyles.h3SemiBold, color: TPColors.grayscale900),
-            const SizedBox(height: 4),
-            const TPText(
-              '啟用後可以直接描述您遇到的狀況，例如「雇主打我」「đau bụng」。'
-              'AI 在您的手機上運作，輸入的內容不會傳出去。第一次需下載約 165 MB，之後不用網路也能用。',
-              style: TPTextStyles.bodyRegular,
-              color: TPColors.grayscale700,
-            ),
-            const SizedBox(height: 12),
-            if (state == SemanticState.loading)
-              Row(
-                children: [
-                  const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
-                  const SizedBox(width: 12),
-                  TPText(
-                    progress != null && progress < 100 ? '下載中 $progress%' : '準備中…',
-                    style: TPTextStyles.bodyRegular,
-                    color: TPColors.grayscale700,
-                  ),
-                ],
-              )
+            if (!failed)
+              const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
             else
-              SizedBox(
-                height: 48,
-                child: FilledButton(
-                  style: FilledButton.styleFrom(backgroundColor: TPColors.primary500),
-                  onPressed: controller.enableAi,
-                  child: TPText(
-                    state == SemanticState.failed ? '重新嘗試' : '啟用 AI 語意搜尋',
-                    style: TPTextStyles.h3SemiBold,
-                    color: TPColors.white,
-                  ),
-                ),
+              const Icon(Icons.info_outline, size: 18, color: TPColors.grayscale500),
+            const SizedBox(width: 8),
+            Expanded(
+              child: TPText(
+                failed
+                    ? 'AI 搜尋暫時無法使用，目前只用關鍵字搜尋。'
+                    : progress != null && progress < 100
+                    ? 'AI 搜尋準備中（下載 $progress%），先顯示關鍵字搜尋結果。'
+                    : 'AI 搜尋準備中…',
+                style: TPTextStyles.caption,
+                color: TPColors.grayscale600,
               ),
-            if (state == SemanticState.failed)
-              const Padding(
-                padding: EdgeInsets.only(top: 8),
-                child: TPText('目前無法啟用，請確認網路後再試。仍可使用一般搜尋。', style: TPTextStyles.caption, color: TPColors.grayscale600),
+            ),
+            if (failed)
+              TextButton(
+                onPressed: controller.retryAi,
+                child: const TPText('重新嘗試', style: TPTextStyles.caption, color: TPColors.primary700),
               ),
           ],
         ),
