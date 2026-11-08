@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:town_pass/gen/assets.gen.dart';
+import 'package:town_pass/page/service_search/service_search_index.dart';
 
 // 先於 MyServiceItemId enum 加入新服務；
 // 再在 MyServiceIdExt 擴充中加入該服務的 MyServiceItem 物件。
@@ -189,7 +190,7 @@ extension MyServiceIdExt on MyServiceItemId {
           description: '把看不懂的市政資訊變好懂',
           icon: Assets.png.iconEasyRead.image(),
           category: MyServiceCategory.cityService,
-          destinationUrl: 'https://www.gov.taipei/',
+          destinationUrl: migrantServiceBaseUrl,
         ),
     };
   }
